@@ -21,15 +21,15 @@ Data::Page::Set - Print page indexes
 
 =head2 Data::Page::Set->new( $page, $setsize, $showhash );
 
-=head3 Arguments
+=head4 Arguments
 
 =over 4
 
-=item $page [Required]
+=item C<$page> [Required]
 
 A Data::Page object.
 
-=item $setsize [Required]
+=item C<$setsize> [Required]
 
 The size of the pageset:
 If you have a page object with 20 pages,
@@ -40,7 +40,7 @@ B<E<lt>E<lt>> B<E<lt>> B<4> B<5> 6 B<7> B<8> B<E<gt>> B<E<gt>E<gt>>
 Then setsize should be 5 because we're only
 showing 5 page indexes.
 
-=item $showhash
+=item C<$showhash>
 
 A hash with zero or more of the following keys,
 with a coderef as value:
@@ -87,12 +87,12 @@ use strict;
 use warnings;
 use vars qw($VERSION);
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 my $code = {
-    show_first          => sub { qq(<a href="?page=$_[0]">&st;&st;First</a>) },
+    show_first          => sub { qq(<a href="?page=$_[0]">&lt;&lt;First</a>) },
     show_no_first       => sub { qq() },
-    show_prev           => sub { qq(<a href="?page=$_[0]">&st;Previous</a>) },
+    show_prev           => sub { qq(<a href="?page=$_[0]">&lt;Previous</a>) },
     show_no_prev        => sub { qq() },
     show_next           => sub { qq(<a href="?page=$_[0]">&gt;Next</a>) },
     show_no_next        => sub { qq() },
@@ -107,7 +107,7 @@ my $code = {
 sub new {
     my $class = shift;
     my $pager = shift;
-    my $setsize = shift;
+    my $setsize = shift || 10;
     my $show  = shift;
 
     for my $key ( keys %$code ) {
@@ -117,8 +117,8 @@ sub new {
     }
 
     my $self = bless {
-        pager => $pager,
-        show  => $show,
+        pager   => $pager,
+        show    => $show,
         setsize => $setsize,
     }, $class;
 
@@ -135,7 +135,7 @@ sub show {
         $self->page_in_view($pager->first_page)
             ? $show->{show_no_first}->($pager->first_page, $pager)
             : $show->{show_first}->($pager->first_page, $pager),
-        $self->page_in_view($pager->first_page)
+        $pager->current_page == $pager->first_page
             ? $show->{show_no_prev}-> ($pager->previous_page, $pager)
             : $show->{show_prev}->($pager->previous_page, $pager),
         map(
@@ -145,7 +145,7 @@ sub show {
                     : $show->{show_page}->( $_, $pager )
             } $self->pages_in_view()
         ),
-        $self->page_in_view($pager->last_page)
+        $pager->current_page == $pager->last_page
             ? $show->{show_no_next}->($pager->next_page, $pager)
             : $show->{show_next}->($pager->next_page, $pager),
         $self->page_in_view($pager->last_page)
@@ -201,6 +201,11 @@ sub page_after_view {
 
     return $in_view[-1] + 1;
 }
+
+=head1 HISTORY
+
+0.02: Previous and next are show when current page
+      not is first and last resp.
 
 =head1 TODO
 
