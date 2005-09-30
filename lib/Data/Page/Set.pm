@@ -15,7 +15,7 @@ Data::Page::Set - Print page indexes
   my $page      = Data::Page->new( scalar @data, 5, shift );
   my $pageset   = Data::Page::Set->new( $page, 6, {} );
 
-  print $pageset->generate;
+  print $pageset->show;
 
 =head1 DESCRIPTION
 
@@ -43,41 +43,57 @@ showing 5 page indexes.
 =item C<$showhash>
 
 A hash with zero or more of the following keys,
-with a coderef as value:
+with a coderef as value wich is executed when we are about to print:
 
 =over 4
 
 =item show_first
 
-Executed when we want to print a link to the first page
+link to the first page
 
 =item show_no_first
 
-Executed when we don't want to print the first page
+no link to the first page
 
 =item show_prev
 
+previous page link
+
 =item show_no_prev
+
+no link to the previous
 
 =item show_next
 
+next page link
+
 =item show_no_next
+
+No next page link
 
 =item show_last
 
+Last page link
+
 =item show_no_last
+
+No last page link
 
 =item show_page
 
+A link to another page
+
 =item show_current_page
 
-=item joiner
-
-Executed and used as the first argument to join
+The current page
 
 =item grepper
 
 Executed in grep { $code->($_) } before the result is joined
+
+=item joiner
+
+Executed and used as the first argument to join
 
 =back
 
@@ -87,7 +103,7 @@ use strict;
 use warnings;
 use vars qw($VERSION);
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 my $code = {
     show_first          => sub { qq(<a href="?page=$_[0]">&lt;&lt;First</a>) },
