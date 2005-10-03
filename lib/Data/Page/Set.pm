@@ -103,7 +103,7 @@ use strict;
 use warnings;
 use vars qw($VERSION);
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 my $code = {
     show_first          => sub { qq(<a href="?page=$_[0]">&lt;&lt;First</a>) },
@@ -146,31 +146,31 @@ sub show {
     my $show    = shift || $self->{show};
     my $pager   = $self->{pager};
 
-    return  join( $show->{joiner}->(),
-            grep { $show->{grepper}->($_) }
-        $self->page_in_view($pager->first_page)
+    return  join $show->{joiner}->(),
+            grep( { $show->{grepper}->($_) } (
+        $self->page_in_set($pager->first_page)
             ? $show->{show_no_first}->($pager->first_page, $pager)
             : $show->{show_first}->($pager->first_page, $pager),
         $pager->current_page == $pager->first_page
             ? $show->{show_no_prev}-> ($pager->previous_page, $pager)
             : $show->{show_prev}->($pager->previous_page, $pager),
-        map(
+        (map
             {
                 $_ == $pager->current_page
                     ? $show->{show_current_page}->( $_, $pager )
                     : $show->{show_page}->( $_, $pager )
-            } $self->pages_in_view()
+            } $self->pages_in_set()
         ),
         $pager->current_page == $pager->last_page
             ? $show->{show_no_next}->($pager->next_page, $pager)
             : $show->{show_next}->($pager->next_page, $pager),
-        $self->page_in_view($pager->last_page)
+        $self->page_in_set($pager->last_page)
             ? $show->{show_no_last}->($pager->last_page, $pager)
             : $show->{show_last}->($pager->last_page, $pager),
-    );
+    ));
 }
 
-sub pages_in_view {
+sub pages_in_set {
     my $self = shift;
 
     my $cur     = $self->{pager}->current_page;
@@ -195,25 +195,25 @@ sub pages_in_view {
     return $first_show->() .. $last_show->();
 }
 
-sub page_in_view {
+sub page_in_set {
     my $self = shift;
     my $page = shift;
 
     return scalar grep
         { $_ == $page }
-        $self->pages_in_view;
+        $self->pages_in_set;
 }
 
 sub page_before_view {
     my $self = shift;
-    my @in_view = $self->pages_in_view;
+    my @in_view = $self->pages_in_set;
 
     return $in_view[0] - 1;
 }
 
 sub page_after_view {
     my $self = shift;
-    my @in_view = $self->pages_in_view;
+    my @in_view = $self->pages_in_set;
 
     return $in_view[-1] + 1;
 }
@@ -222,6 +222,8 @@ sub page_after_view {
 
 0.02: Previous and next are show when current page
       not is first and last resp.
+
+0.04: perl-5.6.1 compatible, tests added
 
 =head1 TODO
 
